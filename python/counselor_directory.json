@@ -1,0 +1,36 @@
+{
+    "counseling_center": {
+        "name": "University Wellness & Counseling Center",
+        "location": "Student Union Building, Suite 305",
+        "phone": "(123) 456-7890",
+        "email": "counseling@university.edu",
+        "hours": "Monday - Friday, 9:00 AM - 5:00 PM (By Appointment)"
+    },
+    "counselors": [
+        {
+            "name": "Dr. Aris Thorne",
+            "title": "Lead Psychologist",
+            "specialization": "Specializes in anxiety and academic stress."
+        },
+        {
+            "name": "Priya Singh, LPC",
+            "title": "Licensed Professional Counselor",
+            "specialization": "Focuses on depression and relationship issues."
+        },
+        {
+            "name": "Dr. Ben Carter",
+            "title": "Clinical Counselor",
+            "specialization": "Works with students on career counseling and life transitions."
+        },
+        {
+            "name": "Maria Garcia, LCSW",
+            "title": "Licensed Clinical Social Worker",
+            "specialization": "Specializes in mindfulness, trauma, and group therapy."
+        },
+        {
+            "name": "Sam Chen",
+            "title": "Wellness Coach",
+            "specialization": "Helps with habit formation, time management, and general wellness."
+        }
+    ]
+}

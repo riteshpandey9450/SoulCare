@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
-  const role = "counsellor"; // This can be dynamic based on user state
+  const role = "student"; // This can be dynamic based on user state
   return (
     <nav className="flex items-center justify-between px-8 py-4 shadow-md bg-white">
       {/* Logo */}

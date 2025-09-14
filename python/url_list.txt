@@ -1,0 +1,11 @@
+--- Wikipedia Articles (uses API scraper) ---
+https://en.wikipedia.org/wiki/Attention_deficit_hyperactivity_disorder
+https://en.wikipedia.org/wiki/Anxiety_disorder
+
+--- WHO Fact Sheets (uses Selenium scraper) ---
+https://www.who.int/news-room/fact-sheets/detail/anxiety-disorders
+https://www.who.int/news-room/fact-sheets/detail/depression
+https://www.who.int/news-room/fact-sheets/detail/drinking-water
+
+--- Other Websites ---
+https://www.physio-pedia.com/Behavioral_problems_in_children
