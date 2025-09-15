@@ -12,10 +12,37 @@ export default function Navbar() {
       {/* Links */}
       <div className="space-x-6 hidden md:flex">
         <a href={`/${role}-dashboard`} className="hover:text-indigo-600">Dashboard</a>
-        <a href="/about" className="hover:text-indigo-600">About</a>
-        <a href="/contact" className="hover:text-indigo-600">Contact</a>
-        <a href="/resources" className="hover:text-indigo-600">Resources</a>
-        <a href="/profile" className="hover:text-indigo-600">Profile</a>
+        {
+          role === "student" && (
+            <>
+            <a href="/about" className="hover:text-indigo-600">About</a>
+            <a href="/contact" className="hover:text-indigo-600">Contact</a>
+            <a href="/resources" className="hover:text-indigo-600">Resources</a>
+            <a href="/profile" className="hover:text-indigo-600">Profile</a>
+            </>
+          )
+    
+        }
+        {
+          role==="counsellor" && (
+            <>
+            <a href="/about" className="hover:text-indigo-600">About</a>
+            <a href="/contact" className="hover:text-indigo-600">Contact</a>
+            <a href="/resources" className="hover:text-indigo-600">Resources</a>
+            <a href="/profile" className="hover:text-indigo-600">Profile</a>
+            </>
+          )
+        }
+        {
+                
+          role === "admin" && (
+            <>
+            <a href="/manage-counsellors" className="hover:text-indigo-600">Manage Counsellors</a>
+            <a href="/reports" className="hover:text-indigo-600">Student Report</a>
+
+            </>
+          )
+        }
       </div>
 
       {/* CTA Button */}

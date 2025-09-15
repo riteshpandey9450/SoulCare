@@ -6,6 +6,7 @@ import datetime
 import json
 import re
 import time
+import json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -21,6 +22,7 @@ DB_PATH = "./chroma_db"
 COLLECTION_NAME = "mental_health_support"
 # LOG_FILE = "conversation_log.txt"
 LOG_DIR = "conversation_logs"
+SUMMARY_DIR = "summaries"
 
 # ==============================================================================
 # --- SAFETY SYSTEM ---
@@ -41,10 +43,52 @@ def check_with_llm_classifier(user_input):
         return "CRISIS" in response.text.upper()
     except Exception: return True # Default to crisis for safety
 
-def get_helpline_response():
-    return "⚠️ It sounds like you are going through a very difficult time. Please know that help is available. In India, you can contact iCall at +91 9152987821 or AASRA at +91-9820466726."
+# def get_helpline_response():
+#     return "⚠️ It sounds like you are going through a very difficult time. Please know that help is available. In India, you can contact iCall at +91 9152987821 or AASRA at +91-9820466726."
 
-import json
+# def get_counselor_info_text():
+#     """Returns the static, pre-written on-campus counselor information."""
+#     return """
+# Here is the contact information for the on-campus counselors. They are here to help you.
+# ▶ Dr. Anjali Sharma (Head Counselor): anjali.sharma@university.edu | Office: Wellness Center, Room 101
+# ▶ Mr. Rohan Verma (Counselor): rohan.verma@university.edu | Office: Wellness Center, Room 102
+# ▶ Confidential Booking Link: [https://university.edu/counseling-booking]
+# """
+
+# --- NEW FUNCTION FOR GENERATING A DYNAMIC CRISIS RESPONSE ---
+def generate_crisis_response(user_query):
+    """Generates an empathetic response that incorporates helpline info."""
+    counselor_info = get_counselor_info_response()
+    
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    prompt = f"""
+    You are Elara, an AI wellness assistant. Your current and ONLY role is to act as a Crisis First Responder.
+    A user has sent a message indicating they are in severe distress or considering self-harm.
+    Your goal is to respond with empathy, validate their feelings, and immediately and clearly guide them to professional help.
+    
+    Follow these steps precisely:
+    1. Start by acknowledging their pain based on their message. Use phrases like "It sounds like you're in a tremendous amount of pain," or "Thank you for telling me, that sounds incredibly difficult."
+    2. Know your limitations as an AI but don't tell the user about it. Keep the conversation centerd at them. Say something like, "It's really important that you speak with someone who can truly support you right now."
+    3. Seamlessly integrate the provided counselor information as the main call to action. Make it clear and direct.
+    4. Keep the entire message concise, calm, and supportive. DO NOT ask questions or try to continue the conversation. Your only job is to refer.
+
+    USER'S MESSAGE: "{user_query}"
+
+    COUNSELOR INFORMATION TO INCLUDE:
+    {counselor_info}
+
+    Your Empathetic and Supportive Response:
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        return response.text+"\n\nAll conversations are confidential. Please don't hesitate to connect with them."
+    except Exception as e:
+        print(f"CRITICAL: Crisis response generation failed. Falling back to static message. Error: {e}")
+        # Failsafe: If the API fails, return the raw, safe information.
+        return "It sounds like you are in severe distress. Please reach out now. " + counselor_info
+
 
 def get_counselor_info_response():
     """
@@ -92,88 +136,141 @@ def get_counselor_info_response():
     
     return message
 
-def generate_session_summary(conversation_history, session_log_path):
+def generate_session_summary(conversation_history, session_log_path, session_had_crisis):
     """
-    Generates a summary of the bot's advice, saves it to a file linked
-    to the conversation log, and returns the summary text.
+    Generates two summaries from the conversation, saves them to respective
+    directories, and returns the summary of Elara's advice.
     """
-    SUMMARY_DIR = "summaries"
+    # --- Setup Directories ---
+    elara_summary_dir = os.path.join(SUMMARY_DIR, "Elara_responses")
+    student_summary_dir = os.path.join(SUMMARY_DIR, "student_problems")
+    os.makedirs(elara_summary_dir, exist_ok=True)
+    os.makedirs(student_summary_dir, exist_ok=True)
 
-    bot_responses = [
-        turn['parts'][0]['text']
-        for turn in conversation_history
-        if turn['role'] == 'model'
-    ]
+    # --- Extract Conversation Parts ---
+    user_queries = [turn['parts'][0]['text'] for turn in conversation_history if turn['role'] == 'user']
+    Elara_responses = [turn['parts'][0]['text'] for turn in conversation_history if turn['role'] == 'model']
 
-    if not bot_responses:
-        return "No specific advice was provided in this session."
+    if not conversation_history:
+        return "There was no conversation to summarize."
 
-    bot_responses_text = "\n\n---\n\n".join(bot_responses)
+    user_queries_text = "\n".join(user_queries)
+    Elara_responses_text = "\n\n---\n\n".join(Elara_responses)
 
+    # print(user_queries_text+"\n")
+    # print(bot_responses_text+"\n")
+    
     model = genai.GenerativeModel('gemini-1.5-flash')
-    prompt = f"""
-    Analyze the following responses from the wellness bot 'Elara'.
-    Your task is to extract only the actionable advice and coping strategies that Elara suggested.
-    Create a concise, clear summary for a user's dashboard.
-    The summary should be a list of key techniques or suggestions the user can try. Use bullet points.
-    --- ELARA'S RESPONSES ---
-    {bot_responses_text}
-    --- END RESPONSES ---
-    Summary of Elara's Key Suggestions:
-    """
+    base_log_filename = os.path.basename(session_log_path)
+
+    # --- 1. Generate and Save Student Problem Summary ---
     try:
-        response = model.generate_content(prompt)
-        summary_text = response.text
+        crisis_note = ""
+        if session_had_crisis:
+            crisis_note = "\n\nIMPORTANT: A crisis was detected at least once during this conversation."
 
-        os.makedirs(SUMMARY_DIR, exist_ok=True)
+        student_prompt = f"""
+        Analyze the following messages from a student. Identify and summarize the main problem or emotional state the student is describing.
+        The summary should be a concise, high-level overview for an admin dashboard.
+        Example: "The student is experiencing significant anxiety related to upcoming exams and feels overwhelmed by their workload."
+        
+        --- STUDENT'S MESSAGES ---
+        {user_queries_text}
+        --- END MESSAGES ---
 
-        base_log_filename = os.path.basename(session_log_path)
-        summary_filename = base_log_filename.replace("log_", "summary_", 1)
-        filepath = os.path.join(SUMMARY_DIR, summary_filename)
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(summary_text)
-
-        print(f"\n✅ Summary successfully saved to: {filepath}")
-
-        # D. Return the summary text as before.
-        return summary_text
-
+        Summary of the student's primary concern:{crisis_note}
+        """
+        student_response = model.generate_content(student_prompt)
+        student_summary_text = student_response.text
+        
+        student_summary_filename = base_log_filename.replace("log_", "student_problem_", 1)
+        student_filepath = os.path.join(student_summary_dir, student_summary_filename)
+        with open(student_filepath, "w", encoding="utf-8") as f:
+            f.write(student_summary_text)
+        print(f"✅ Student problem summary saved to: {student_filepath}")
     except Exception as e:
-        return f"Could not generate or save a summary. Error: {e}"
+        print(f"Warning: Could not generate student problem summary. Error: {e}")
+
+    # --- 2. Generate and Save Elara's Advice Summary ---
+    try:
+        elara_prompt = f"""
+        Analyze the following responses from the wellness bot 'Elara'. Extract only the actionable advice and coping strategies suggested.
+        Create a concise summary as a bulleted list for the user.
+        
+        --- ELARA'S RESPONSES ---
+        {Elara_responses_text}
+        --- END RESPONSES ---
+        
+        Summary of Elara's Key Suggestions:
+        """
+        elara_response = model.generate_content(elara_prompt)
+        elara_summary_text = elara_response.text
+        
+        elara_summary_filename = base_log_filename.replace("log_", "elara_advice_", 1)
+        elara_filepath = os.path.join(elara_summary_dir, elara_summary_filename)
+        with open(elara_filepath, "w", encoding="utf-8") as f:
+            f.write(elara_summary_text)
+        print(f"✅ Elara advice summary saved to: {elara_filepath}")
+        
+        return elara_summary_text # Return this summary to the user
+    except Exception as e:
+        return f"Could not generate or save Elara's advice summary. Error: {e}"
 
 # ==============================================================================
 # --- CORE RAG CHATBOT LOGIC ---
 # ==============================================================================
 def get_relevant_context(user_query, db_collection):
+    """
+    Retrieves the most relevant context and its topic from the database.
+    """
     query_embedding = genai.embed_content(model=EMBEDDING_MODEL, content=user_query)['embedding']
-    results = db_collection.query(query_embeddings=[query_embedding], n_results=2)
-    return "\n---\n".join(results['documents'][0])
+    results = db_collection.query(
+        query_embeddings=[query_embedding],
+        n_results=2,
+        include=['documents', 'metadatas'] # Ensure metadata is included
+    )
+    if results and results['documents'][0]:
+        retrieved_text = results['documents'][0][0]
+        retrieved_topic = results['metadatas'][0][0].get('topic', 'a general concern')
+        return retrieved_text, retrieved_topic
+    return None, None
+
 
 def generate_response(user_query, db_collection, conversation_history):
+    """
+    Generates a response, identifies the psychological condition, and returns the combined text along with a crisis flag.
+    """
+    is_current_prompt_crisis = False
     print(f"\n🔍 User Query: '{user_query}'")
+    
     if check_keywords(user_query) or check_with_llm_classifier(user_query):
-        print("🚨 Crisis detected. Providing on-campus counselor information...")
-        return get_counselor_info_response()
+        is_current_prompt_crisis = True
+        print("🚨 Crisis detected. Generating a supportive referral response...")
+        response_text = generate_crisis_response(user_query)
+        return response_text, is_current_prompt_crisis
     
     print("✅ Safety checks passed. Retrieving context...")
-    retrieved_context = get_relevant_context(user_query, db_collection)
+    retrieved_context, context_topic = get_relevant_context(user_query, db_collection)
+    
+    history_text = "\n".join([f"{turn['role']}: {turn['parts'][0]['text']}" for turn in conversation_history])
 
-    history_str = "\n".join([f"{'You' if turn['role'] == 'user' else 'Sahay'}: {turn['parts'][0]['text']}" for turn in conversation_history])
-    
     prompt_template = """
-    You are 'Elara', a supportive and empathetic AI wellness assistant for college students.
-    Your role is to provide helpful first-aid coping strategies. You are not a doctor.
-    You must always be caring, reassuring, and safe.
-    Never give medical advice. If a user seems to be in a crisis, you must advise them to seek professional help immediately.
-    Your goal is to have a natural, caring conversation.
-    
-    Based on the context provided below, answer the user's query.
-    If no specific context is provided, offer general support and encouragement.
-    
+    You are 'Elara', a supportive AI wellness assistant for college students.
+    Your goal is to have a natural, safe and caring conversation. You are not a doctor and must not give medical advice.
+
+    *** TONE AND STYLE GUIDELINES ***
+    - Maintain a supportive, empathetic, and respectful tone.
+    - AVOID overly familiar or patronizing language like "honey", "sweetheart", or "dear".
+    - Address the user as a peer. Be encouraging but not condescending.
+    *** END GUIDELINES ***
+
+    *** IMPORTANT RULE ***
+    If the user asks how to contact a counselor, book an appointment, or talk to someone professional in a NON-CRISIS context, DO NOT provide direct contact details like names or emails. Instead, you MUST guide them to the confidential booking page with a message like: "That's a great step to take. You can book a confidential session with one of our on-campus counselors through the booking page: [https://university.edu/counseling-booking]".
+    *** END IMPORTANT RULE ***
+
     Review the 'CONVERSATION HISTORY' to understand what has already been discussed.
     Use the 'CONTEXT FROM KNOWLEDGE BASE' only if the user asks a new question or needs specific information.
-    If the user is simply replying to you or expressing feelings, prioritize continuing the conversation naturally based on the history. Avoid repeating advice.
+    If the user is simply replying to you, prioritize continuing the conversation naturally. Avoid repeating advice.
 
     --- CONVERSATION HISTORY ---
     {history}
@@ -187,12 +284,38 @@ def generate_response(user_query, db_collection, conversation_history):
     
     Your Helpful Response:
     """
-    # 3. Pass the formatted history string into the prompt
-    prompt = prompt_template.format(history=history_str, context=retrieved_context, query=user_query)
+    prompt = prompt_template.format(history=history_text, context=retrieved_context, query=user_query)
     
     model = genai.GenerativeModel('gemini-1.5-flash')
     response = model.generate_content(prompt)
-    return response.text
+    main_response_text = response.text
+
+    # --- Meta-analysis to identify the condition ---
+    if conversation_history and context_topic: # Only add this if there's context
+        meta_prompt = f"""
+        Based on the conversation history and the primary topic identified from the knowledge base, formulate a single, gentle, non-diagnostic sentence that helps the user label their feelings.
+        The sentence should start with "It sounds like you might be dealing with...". Do not use medical jargon. Keep it simple and empathetic.
+        
+        CONVERSATION HISTORY:
+        {history_text}
+        
+        USER'S LATEST MESSAGE:
+        {user_query}
+        
+        IDENTIFIED TOPIC: {context_topic}
+        
+        Formulate the single sentence:
+        """
+        meta_response = model.generate_content(meta_prompt)
+        condition_identification = meta_response.text.strip()
+        final_response = f"{main_response_text}\n\n_{condition_identification}_"
+    else:
+        final_response = main_response_text
+
+    return final_response, is_current_prompt_crisis
+
+
+# 
 
 # ==============================================================================
 # --- MAIN EXECUTION with Logging ---
@@ -220,6 +343,7 @@ if __name__ == "__main__":
     
     while True:
         conversation_history = []
+        session_had_crisis = False
         
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         session_log_filename = f"log_{timestamp}.txt"
@@ -236,7 +360,9 @@ if __name__ == "__main__":
             if user_input.lower() == 'quit':
                 break
 
-            ai_response = generate_response(user_input, db, conversation_history)
+            ai_response, is_crisis_now = generate_response(user_input, db, conversation_history)
+            if is_crisis_now:
+                session_had_crisis = True
             
             conversation_history.append({"role": "user", "parts": [{"text": user_input}]})
             conversation_history.append({"role": "model", "parts": [{"text": ai_response}]})
@@ -251,11 +377,7 @@ if __name__ == "__main__":
         if conversation_history:
             print("\n🤖 Elara is generating a summary of your conversation...")
             
-            summary = generate_session_summary(conversation_history, session_log_path)
-            
-            # print("\n--- Your Conversation Summary ---")
-            # print(summary)
-            # print("---------------------------------")
+            summary = generate_session_summary(conversation_history, session_log_path, session_had_crisis)
         
         print("🤖 Elara says: Goodbye! Take care. Feel free to reach out again!")
         break 

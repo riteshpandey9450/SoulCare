@@ -11,6 +11,10 @@ import ContactPage from './pages/Contact'
 import ResourcePage from './pages/Resource'
 import ProfilePage from './pages/ProfilePage'
 import CounsellorDashboard from './pages/CounsellorDashboard'
+import AdminDashboard from './pages/AdminDashboard'
+import CounsellorManagement from './pages/CounsellorManagementPage'
+import FeedbackPage from './pages/FeedbackPage'
+import Reports from './pages/Reports'
 
 const App = () => {
   const role = "student"
@@ -25,10 +29,14 @@ const App = () => {
             <Route path="/contact" element={<ContactPage />} />
             <Route path= {`student-dashboard`} element={<StudentDashboard />} />
             <Route path= {`counsellor-dashboard`} element={<CounsellorDashboard />} />
+            <Route path= {`admin-dashboard`} element={<AdminDashboard />} />
             <Route path="/chatbot" element={<ChatbotPage />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/resources" element={<ResourcePage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/manage-counsellors" element={<CounsellorManagement />} />
+            <Route path="/feedback-form" element={<FeedbackPage />} />
+            <Route path="/reports" element={<Reports />} />
           </Routes>
         <Footer/>
       </Router>
