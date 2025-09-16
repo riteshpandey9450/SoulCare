@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import CounsellorManagement from './pages/CounsellorManagementPage'
 import FeedbackPage from './pages/FeedbackPage'
 import Reports from './pages/Reports'
+import CounsellorProfile from './pages/CounsellorProfile'
 
 const App = () => {
   const role = "student"
@@ -33,7 +34,8 @@ const App = () => {
             <Route path="/chatbot" element={<ChatbotPage />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/resources" element={<ResourcePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/student-profile" element={<ProfilePage />} />
+            <Route path="/counsellor-profile" element={<CounsellorProfile />} />
             <Route path="/manage-counsellors" element={<CounsellorManagement />} />
             <Route path="/feedback-form" element={<FeedbackPage />} />
             <Route path="/reports" element={<Reports />} />
