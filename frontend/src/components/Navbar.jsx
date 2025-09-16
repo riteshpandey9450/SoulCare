@@ -100,12 +100,16 @@ export default function Navbar() {
                 {/* Dropdown Menu */}
                 {isProfileDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                    <a href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors duration-200">
-                      View Profile
-                    </a>
-                    <hr className="my-2 border-gray-200" />
+                    {role !== "admin" &&
+                    <>
+                      <a href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors duration-200">
+                        View Profile
+                      </a>
+                      <hr className="my-2 border-gray-200" />
+                    </>
+                    }
                     <button onClick={() => setUser(false)} className="block px-4 py-2 text-red-600 hover:bg-red-50 transition-colors duration-200">
-                      Logout
+                      <LogOut size={20} className='inline-block mr-2'/> Logout
                     </button>
                   </div>
                 )}
@@ -152,15 +156,18 @@ export default function Navbar() {
 
 
             {/* Mobile Profile Section */}
-            {user && 
+            {user &&
               <div className="pt-6 border-t border-gray-200 space-y-3">
-                <a
-                  href="/profile"
-                  className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-300"
-                >
-                  <User size={20} />
-                  <span className="font-medium">Profile</span>
-                </a>
+                {
+                  role !== "admin" &&
+                  <a
+                    href="/profile"
+                    className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-300"
+                  >
+                    <User size={20} />
+                    <span className="font-medium">Profile</span>
+                  </a>
+                }
 
                 <button
                   onClick={() => setUser(false)}
