@@ -6,34 +6,55 @@ export default function AboutPage() {
       bio: "Specializes in building scalable MERN applications, leading innovation in mental health tech.",
     },
     {
-      name: "Ananya Sharma",
+      name: "Avinash Singh",
       role: "UI/UX Designer",
       bio: "Passionate about creating intuitive and inclusive user experiences tailored for accessibility.",
     },
     {
-      name: "Rohit Verma",
+      name: "Harshit Singh",
       role: "Backend Engineer",
       bio: "Expert in API design, authentication systems, and database management with Node.js and MongoDB.",
     },
     {
-      name: "Priya Iyer",
+      name: "Ritesh Pandey",
       role: "AI & Chatbot Specialist",
       bio: "Focused on AI-driven coping strategies and natural language models for real-time support.",
     },
     {
-      name: "Priya Iyer",
+      name: "Pratik Khare",
       role: "AI & Chatbot Specialist",
       bio: "Focused on AI-driven coping strategies and natural language models for real-time support.",
     },
     {
-      name: "Priya Iyer",
+      name: "Priya Verma",
       role: "AI & Chatbot Specialist",
       bio: "Focused on AI-driven coping strategies and natural language models for real-time support.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-6 md:px-20">
+    <div className="relative min-h-screen bg-gray-50 py-12 px-6 md:px-20 overflow-hidden">
+      {/* Background Grid & Blue Patches */}
+      <div className="fixed inset-0 pointer-events-none -z-10">
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div
+            className="h-full w-full"
+            style={{
+              backgroundImage: `linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)`,
+              backgroundSize: "50px 50px",
+            }}
+          ></div>
+        </div>
+
+        {/* Blue Patches - Static */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-100 to-blue-400 rounded-full opacity-40 -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-sky-100 to-sky-400 rounded-full opacity-30 -translate-x-1/2"></div>
+        <div className="absolute bottom-0 right-3/4 w-72 h-72 bg-gradient-to-tr from-indigo-100 to-indigo-400 rounded-full opacity-35 translate-y-1/3"></div>
+        <div className="absolute bottom-1/3 left-3/4 w-64 h-64 bg-gradient-to-bl from-cyan-100 to-cyan-400 rounded-full opacity-30"></div>
+        <div className="absolute top-5/7 right-1/4 w-56 h-56 bg-gradient-to-tl from-blue-100 to-blue-400 rounded-full opacity-25"></div>
+      </div>
+
       {/* About Section */}
       <section className="max-w-5xl mx-auto text-center mb-16">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">About Us</h1>
