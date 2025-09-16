@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
 import { Volume2, VolumeX, Calendar, MessageCircle, BookOpen, Activity, Brain, Heart, Users, Bell, Settings, ChevronRight, Clock, Star, TrendingUp, Shield, Zap, Target, Play, Pause, Download, CheckCircle, AlertCircle, User, Video, Phone, Headphones, SkipBack, SkipForward, Volume1 } from "lucide-react";
 
 export default function StudentDashboard() {
@@ -136,7 +136,7 @@ useEffect(() => {
   }, []);
 
   const upcomingSessions = [
-    { name: "Dr. Sarah Smith", role: "Licensed Counselor", time: "Today, 4:00 PM", status: "active", type: "video", avatar: "🧑‍⚕️" },
+    { name: "Dr. Sarah Smith", role: "Licensed Counselor", time: "Today, 4:00 PM", status: "active", type: "video", avatar: "🧑‍⚕️",meetingLink:"https://meet.jit.si/SoulCare-9e35b4b9539d" },
     { name: "Dr. Emily Johnson", role: "Cognitive Therapist", time: "Tomorrow, 11:00 AM", status: "pending", type: "audio", avatar: "👩‍⚕️" },
     { name: "Support Group - Anxiety", role: "Peer Support", time: "Wed, 2:00 PM", status: "upcoming", type: "group", avatar: "👥" }
   ];
@@ -147,53 +147,6 @@ useEffect(() => {
   ];
 
   
-
-  // const todaysResources = [
-  //   { 
-  //     id: 1,
-  //     title: "Morning Meditation", 
-  //     description: "10-minute guided mindfulness session", 
-  //     icon: <Headphones className="w-5 h-5" />, 
-  //     duration: "10:00", 
-  //     type: "audio",
-  //     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Demo URL
-  //     category: "meditation",
-  //     difficulty: "Beginner"
-  //   },
-  //   { 
-  //     id: 2,
-  //     title: "Exam Stress Relief", 
-  //     description: "Calming breathing exercise with nature sounds", 
-  //     icon: <Heart className="w-5 h-5" />, 
-  //     duration: "8:30", 
-  //     type: "audio",
-  //     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Demo URL
-  //     category: "stress-relief",
-  //     difficulty: "Intermediate"
-  //   },
-  //   { 
-  //     id: 3,
-  //     title: "Sleep Better Tonight", 
-  //     description: "Progressive muscle relaxation audio", 
-  //     icon: <Volume2 className="w-5 h-5" />, 
-  //     duration: "15:45", 
-  //     type: "audio",
-  //     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Demo URL
-  //     category: "sleep",
-  //     difficulty: "Advanced"
-  //   },
-  //   { 
-  //     id: 4,
-  //     title: "Focus Enhancer", 
-  //     description: "Binaural beats for concentration", 
-  //     icon: <Brain className="w-5 h-5" />, 
-  //     duration: "20:00", 
-  //     type: "audio",
-  //     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Demo URL
-  //     category: "focus",
-  //     difficulty: "Intermediate"
-  //   }
-  // ];
 
   // Audio control functions
   const playAudio = (resource) => {
@@ -577,8 +530,8 @@ useEffect(() => {
                           {session.type === 'audio' && <Phone className="w-4 h-4 text-green-600" />}
                           {session.type === 'group' && <Users className="w-4 h-4 text-purple-600" />}
                           {session.status === 'active' && (
-                            <button
-                              onClick={() => handleNavigation('/session/join')}
+                            <button 
+                              onClick={() => window.open(session.meetingLink, '_blank')}
                               className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all"
                             >
                               Join Now
