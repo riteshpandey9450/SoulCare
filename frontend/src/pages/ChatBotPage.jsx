@@ -125,14 +125,10 @@ export default function ChatbotPage() {
     }
   };
 
-  const chatBoxMaxHeight = Math.max(
-    450 ,
-    window.innerHeight - headerHeight - footerHeight - 120
-  );
 
   return (
     <div
-      className="min-h-full relative overflow-x-hidden"
+      className="min-h-screen relative overflow-x-hidden"
       style={{ backgroundColor: "#ffffff" }}
     >
       {/* Background Pattern with Blue Patches - matching homepage */}
@@ -151,7 +147,7 @@ export default function ChatbotPage() {
       </div>
 
       <main className="relative z-10 px-4 md:px-6 max-w-6xl mx-auto pt-2">
-        {/* Header */}
+  {/* Header */}
         <header className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
             <span className="text-gray-900">MindCare</span>
@@ -167,10 +163,10 @@ export default function ChatbotPage() {
         </header>
 
         {/* Chat box */}
-        <div className="flex justify-center w-full min-h-[30rem] border-blue-600">
+        <div className="flex justify-center w-full min-h-[75vh] border-blue-600">
           <div
-            className="w-full max-w-3xl sm:max-w-5xl bg-white backdrop-blur-sm border rounded-2xl shadow-xl flex flex-col  border-blue-400 "
-            style={{ maxHeight: chatBoxMaxHeight, overflow: "hidden" }}
+            className="w-full max-w-3xl sm:max-w-5xl bg-white backdrop-blur-sm border rounded-2xl shadow-xl flex flex-col border-blue-400"
+            style={{ overflow: "hidden" }}
           >
             {/* Messages */}
             <div
