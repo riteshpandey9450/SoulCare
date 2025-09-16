@@ -102,7 +102,7 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     {role !== "admin" &&
                     <>
-                      <a href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors duration-200">
+                      <a href={`${role}-profile`} className="block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors duration-200">
                         View Profile
                       </a>
                       <hr className="my-2 border-gray-200" />
@@ -161,7 +161,7 @@ export default function Navbar() {
                 {
                   role !== "admin" &&
                   <a
-                    href="/profile"
+                    href={`${role}-profile`}
                     className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-300"
                   >
                     <User size={20} />
