@@ -209,22 +209,24 @@ def generate_response(user_query, db_collection, model, conversation_history, bo
     Generates a response based on the 3-tier classification and returns the text and a boolean indicating if the current query was a crisis.
     """
 
-    is_current_prompt_crisis = False
+    # is_current_prompt_crisis = False
     booking_offered_this_turn = booking_already_offered
     # print(f"\n🔍 User Query: '{user_query}'")
     
     if check_keywords(user_query, CRISIS_KEYWORDS) :
-        is_current_prompt_crisis = True
+        intent = 'CRISIS'
+        # is_current_prompt_crisis = True
         print("🚨 Crisis detected. Generating a supportive referral response...")
         response_text = generate_crisis_response(user_query)
-        return response_text, is_current_prompt_crisis,booking_offered_this_turn
+        return response_text, intent, booking_offered_this_turn
     
     if check_keywords(user_query, MODERATE_KEYWORDS) :
+        intent = 'MODERATE'
         # is_current_prompt_moderate = True         #if needed in future
         print("🔶 Moderate concern detected. Generating a supportive counselling response...")
         response_text = generate_moderate_response(user_query, booking_already_offered)
         booking_offered_this_turn = True
-        return response_text,is_current_prompt_crisis,booking_offered_this_turn
+        return response_text, intent, booking_offered_this_turn
     
     # If no keywords, use the LLM for nuanced classification
     intent = classify_intent_with_llm(user_query)
@@ -234,7 +236,7 @@ def generate_response(user_query, db_collection, model, conversation_history, bo
 
     if intent == "CRISIS":
         print("🚨 Crisis detected. Generating a supportive referral response.")
-        is_current_prompt_crisis = True
+        # is_current_prompt_crisis = True
         main_response_text = generate_crisis_response(user_query)
     elif intent == "MODERATE":
         # Now we can use the context we retrieved earlier
@@ -245,6 +247,7 @@ def generate_response(user_query, db_collection, model, conversation_history, bo
     else: # SAFE
         print("✅ Safety checks passed. Retrieving context for normal response...")
         retrieved_context, context_topic = get_relevant_context(user_query, db_collection, model)
+        # print("retrieved context: ", retrieved_context, "context topic: ", context_topic)    //don't uncomment its scary
         history_text = "\n".join([f"{turn['role']}: {turn['parts'][0]['text']}" for turn in conversation_history])
 
         prompt_template = """
@@ -304,7 +307,7 @@ def generate_response(user_query, db_collection, model, conversation_history, bo
     else:
         final_response = main_response_text
 
-    return final_response, is_current_prompt_crisis, booking_offered_this_turn
+    return final_response, intent, booking_offered_this_turn
 
 # ==============================================================================
 # --- Counsellor Information ---
@@ -460,54 +463,54 @@ def log_conversation(user_msg, bot_msg, session_log_path):
 # --- Main Execution 
 # ==============================================================================
    
-if __name__ == "__main__":
-    try:
-        client = chromadb.PersistentClient(path=DB_PATH)
-        db = client.get_collection(name=COLLECTION_NAME)
-    except Exception as e:
-        print("❌ DATABASE NOT FOUND. Please run 'python build_database.py' first.")
-        exit()
+# if __name__ == "__main__":
+#     try:
+#         client = chromadb.PersistentClient(path=DB_PATH)
+#         db = client.get_collection(name=COLLECTION_NAME)
+#     except Exception as e:
+#         print("❌ DATABASE NOT FOUND. Please run 'python build_database.py' first.")
+#         exit()
     
-    while True:
-        conversation_history = []
-        session_had_crisis = False
-        session_offered_booking = False
+#     while True:
+#         conversation_history = []
+#         session_had_crisis = False
+#         session_offered_booking = False
         
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        session_log_filename = f"log_{timestamp}.txt"
-        session_log_path = os.path.join(LOG_DIR, session_log_filename)
+#         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+#         session_log_filename = f"log_{timestamp}.txt"
+#         session_log_path = os.path.join(LOG_DIR, session_log_filename)
 
-        print("\n" + "="*50)
-        print("🤖 Meet Elara — your Shining support for every student moment")
-        print("Type 'quit' to exit.")
-        print("="*50)
+#         print("\n" + "="*50)
+#         print("🤖 Meet Elara — your Shining support for every student moment")
+#         print("Type 'quit' to exit.")
+#         print("="*50)
 
-        while True:
-            user_input = input("You: ")
+#         while True:
+#             user_input = input("You: ")
             
-            if user_input.lower() == 'quit':
-                break
+#             if user_input.lower() == 'quit':
+#                 break
 
-            ai_response, is_crisis_now, session_offered_booking = generate_response(
-                user_input, db, model, conversation_history, session_offered_booking
-            )
-            if is_crisis_now:
-                session_had_crisis = True
+#             ai_response, is_crisis_now, session_offered_booking = generate_response(
+#                 user_input, db, model, conversation_history, session_offered_booking
+#             )
+#             if is_crisis_now:
+#                 session_had_crisis = True
             
-            conversation_history.append({"role": "user", "parts": [{"text": user_input}]})
-            conversation_history.append({"role": "model", "parts": [{"text": ai_response}]})
+#             conversation_history.append({"role": "user", "parts": [{"text": user_input}]})
+#             conversation_history.append({"role": "model", "parts": [{"text": ai_response}]})
 
-            print("\n🤖 Elara says:")
-            print(ai_response)
+#             print("\n🤖 Elara says:")
+#             print(ai_response)
             
-            log_conversation(user_input, ai_response, session_log_path)
+#             log_conversation(user_input, ai_response, session_log_path)
             
-            print("\n" + "-"*50)
+#             print("\n" + "-"*50)
 
-        if conversation_history:
-            # print("\n🤖 Elara is generating a summary of your conversation...")
+#         if conversation_history:
+#             # print("\n🤖 Elara is generating a summary of your conversation...")
             
-            summary = generate_session_summary(conversation_history, session_log_path, session_had_crisis)
+#             summary = generate_session_summary(conversation_history, session_log_path, session_had_crisis)
         
-        print("🤖 Elara says: Goodbye! Take care. Feel free to reach out again!")
-        break 
+#         print("🤖 Elara says: Goodbye! Take care. Feel free to reach out again!")
+#         break 
