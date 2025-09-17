@@ -8,6 +8,7 @@ import connectDB from './utils/db.js';
 
 import userRoutes from './routes/user.route.js';
 import sessionRoutes from './routes/session.route.js';
+import feedbackRoutes from './routes/feedback.route.js';
 
 
 
@@ -25,6 +26,7 @@ app.use(cors());
 
 app.use('/api/auth', userRoutes);
 app.use('/api/session', sessionRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 app.listen(PORT, () => {
   connectDB();
