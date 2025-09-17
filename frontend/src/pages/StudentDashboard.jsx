@@ -1,8 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
 import { Volume2, VolumeX, Calendar, MessageCircle, BookOpen, Activity, Brain, Heart, Users, Bell, Settings, ChevronRight, Clock, Star, TrendingUp, Shield, Zap, Target, Play, Pause, Download, CheckCircle, AlertCircle, User, Video, Phone, Headphones, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { useAuthStore } from "../stores/useAuthStore";
 
 export default function StudentDashboard() {
+  const {user} = useAuthStore();
+
+
   const [chatSummary, setChatSummary] = useState(null);
   const [moodScore, setMoodScore] = useState(7.2);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -303,7 +307,7 @@ useEffect(() => {
                   </div>
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                      {getGreeting()}, <span className="bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">Alex!</span>
+                      {getGreeting()}, <span className="bg-gradient-to-r from-blue-600 to-sky-600 bg-clip-text text-transparent">{user.name} ("{user.anonymous_id}")</span>
                     </h1>
                     <p className="text-gray-600">How are you feeling today?</p>
                   </div>
@@ -319,7 +323,7 @@ useEffect(() => {
                     </button>
                     <button 
                       className="p-2 bg-blue-100 hover:bg-blue-200 rounded-xl transition-colors"
-                      onClick={() => navigate('/profile')}
+                      onClick={() => navigate('/student-profile')}
                     >
                       <Settings className="w-5 h-5 text-blue-600" />
                     </button>

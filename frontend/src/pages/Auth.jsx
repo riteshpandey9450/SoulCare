@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useAuthStore } from "../stores/useAuthStore";
+import {useNavigate} from "react-router-dom";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -12,11 +14,32 @@ export default function Auth() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const {signup,login} = useAuthStore();
+
+  const navigate = useNavigate(); 
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000); // simulate API
+
+    try {
+      if (isLogin) {
+        const response = await login({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (response) navigate("/");
+      } else {
+        const response = await signup(formData);
+        if (response) navigate("/");
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
