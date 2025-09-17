@@ -183,3 +183,58 @@ export const getMe = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const editProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const {name,roolNo,mobile,stream,academicYear} = req.body;
+    let imageUrl = '';
+
+    if (req.file) {
+      try {
+        const cloudinaryResponse = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: "auto" },
+            (error, result) => {
+              if (error) {
+                console.error("Cloudinary Upload Error:", error);
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          uploadStream.end(req.file.buffer);
+        });
+
+        imageUrl = cloudinaryResponse.secure_url;
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        return res.status(500).json({ message: "Failed to upload image" });
+      }
+    }
+
+    
+    user.name = name || user.name;
+    user.roolNo = roolNo || user.roolNo;
+    user.mobile = mobile || user.mobile;
+    user.stream = stream || user.stream;
+    user.academicYear = academicYear || user.academicYear;
+    user.profileUrl = imageUrl || user.profileUrl;
+
+
+    const updatedUser = await user.save();
+    res.json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
