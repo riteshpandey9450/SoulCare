@@ -235,7 +235,7 @@ const AdminDashboard = () => {
 
           {/* Quick Actions */}
           <div className="relative">
-            <div className="absolute inset-0 backdrop-blur-2xl bg-gradient-to-br from-white/50 to-blue-50/30 rounded-2xl"></div>
+            <div className="absolute  backdrop-blur-2xl bg-gradient-to-br from-white/50 to-blue-50/30 rounded-2xl"></div>
             <div className="relative bg-white/70 backdrop-blur-sm rounded-2xl border border-blue-100 p-6 shadow-lg">
               <h2 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
                 <Sparkles className="w-5 h-5 mr-2 text-blue-600" />
