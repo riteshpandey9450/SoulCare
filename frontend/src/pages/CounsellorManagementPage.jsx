@@ -1,56 +1,31 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Trash2,
   Plus,
   UserPlus,
   Users,
   GraduationCap,
-  Phone,
   Mail,
   Calendar,
   Sparkles,
-  Heart,
-  Shield,
-  Eye,
-  EyeOff
+  Phone,
 } from "lucide-react";
+import { useAuthStore } from "../stores/useAuthStore";
 
 export default function CounsellorManagement() {
-  const [counsellors, setCounsellors] = useState([
-    {
-      id: "C001",
-      name: "Dr. Smith",
-      specialization: "Anxiety",
-      qualification: "PhD Psychology",
-      experience: "10",
-      phone: "9876543210",
-      email: "smith@example.com",
-      about:
-        "Passionate about helping students with anxiety and stress management. With over a decade of experience in clinical psychology, I specialize in cognitive-behavioral therapy and mindfulness techniques to help students overcome academic pressure and social anxiety. My approach combines evidence-based therapeutic methods with personalized care to ensure each student receives the support they need. I believe in creating a safe, non-judgmental environment where students can openly discuss their concerns and work towards building resilience and emotional wellbeing for their academic and personal success.",
-      image:
-        "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face",
-    },
-    {
-      id: "C002",
-      name: "Dr. Emily",
-      specialization: "Depression",
-      qualification: "MSc Clinical Psychology",
-      experience: "8",
-      phone: "8765432109",
-      email: "emily@example.com",
-      about: "Dedicated to guiding individuals through depression recovery using evidence-based approaches including interpersonal therapy and behavioral activation. I believe in creating a safe, non-judgmental space where students can explore their feelings and develop healthy coping mechanisms for long-term mental wellness. My therapeutic approach integrates mindfulness practices with traditional counseling methods to help students build emotional resilience and develop effective strategies for managing depression symptoms while maintaining their academic performance.",
-      image:
-        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
-    },
-  ]);
+  const { addCounsellor, getAllCounsellors, allCounsellors, deleteCounsellor, isAddingCounsellor } = useAuthStore();
+
+  useEffect(() => {
+    getAllCounsellors();
+  }, [addCounsellor, deleteCounsellor]);
 
   const [formData, setFormData] = useState({
-    id: "",
+    c_id: "",
     name: "",
     specialization: "",
     qualification: "",
     experience: "",
-    phone: "",
+    mobile: "",
     email: "",
     about: "",
     image: null,
@@ -65,10 +40,10 @@ export default function CounsellorManagement() {
 
   const validateField = (name, value) => {
     switch (name) {
-      case 'id':
+      case 'c_id':
         if (!value || !value.trim()) return 'Counsellor ID is required';
         if (!/^C\d{3}$/.test(value.trim())) return 'ID must be in format C001, C002, etc.';
-        if (counsellors.some((c) => c.id === value.trim())) return 'This ID already exists';
+        if (allCounsellors.some((c) => c.c_id === value.trim())) return 'This ID already exists';
         return '';
       case 'name':
         if (!value || !value.trim()) return 'Full name is required';
@@ -87,23 +62,23 @@ export default function CounsellorManagement() {
         if (isNaN(exp) || exp < 1) return 'Experience must be at least 1 year';
         if (exp > 50) return 'Experience cannot exceed 50 years';
         return '';
-      case 'phone':
-        if (!value || !value.trim()) return 'Phone number is required';
-        if (!/^\d{10}$/.test(value.replace(/\D/g, ''))) return 'Please enter a valid 10-digit phone number';
-        if (counsellors.some((c) => c.phone === value.replace(/\D/g, ''))) return 'This phone number is already registered';
+      case 'mobile':
+        if (!value || !value.trim()) return 'mobile number is required';
+        if (!/^\d{10}$/.test(value.replace(/\D/g, ''))) return 'Please enter a valid 10-digit mobile number';
+        if (allCounsellors.some((c) => c.mobile === value.replace(/\D/g, ''))) return 'This mobile number is already registered';
         return '';
       case 'email':
         if (!value || !value.trim()) return 'Email address is required';
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(value.trim())) return 'Please enter a valid email address';
-        if (counsellors.some((c) => c.email.toLowerCase() === value.trim().toLowerCase())) return 'This email is already registered';
+        if (allCounsellors.some((c) => c.email.toLowerCase() === value.trim().toLowerCase())) return 'This email is already registered';
         return '';
       case 'about':
         if (!value || !value.trim()) return 'About section is required';
         const wordCount = value.trim().split(/\s+/).filter(word => word.length > 0).length;
-        if (wordCount < 10) return 'About section must contain at least 10 words';
+        if (wordCount < 5) return 'About section must contain at least 5 words';
         if (wordCount > 200) return 'About section cannot exceed 200 words';
-        if (value.trim().length < 50) return 'Please provide more detailed information (minimum 50 characters)';
+        if (value.trim().length < 10) return 'Please provide more detailed information (minimum 10 characters)';
         return '';
       case 'image':
         if (!value) return 'Profile image is required';
@@ -121,7 +96,7 @@ export default function CounsellorManagement() {
   const transformValue = (name, raw) => {
     if (name === "experience") {
       return (raw || "").replace(/\D/g, "");
-    } else if (name === "phone") {
+    } else if (name === "mobile") {
       return (raw || "").replace(/\D/g, "").slice(0, 10);
     } else if (name === "about") {
       // limit words to 200; preserve spaces
@@ -199,12 +174,12 @@ export default function CounsellorManagement() {
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     // Mark all fields as touched and validate everything
     const allTouched = {};
     const newErrors = {};
 
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       allTouched[key] = true;
       const error = validateField(key, formData[key]);
       if (error) newErrors[key] = error;
@@ -218,44 +193,53 @@ export default function CounsellorManagement() {
       return;
     }
 
-    const imageURL = URL.createObjectURL(formData.image);
+    try {
+      // Prepare FormData (for backend expecting multipart/form-data)
+      const data = new FormData();
+      data.append("c_id", formData.c_id.trim());
+      data.append("name", formData.name.trim());
+      data.append("specialization", formData.specialization.trim());
+      data.append("qualification", formData.qualification.trim());
+      data.append("experience", formData.experience);
+      data.append("mobile", formData.mobile.replace(/\D/g, ""));
+      data.append("email", formData.email.trim());
+      data.append("about", formData.about.trim());
 
-    setCounsellors(prev => [...prev, {
-      ...formData,
-      id: formData.id.trim(),
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone.replace(/\D/g, ''),
-      image: imageURL,
-    }]);
+      if (formData.image) {
+        data.append("image", formData.image); 
+      }
 
-    // Reset form
-    setFormData({
-      id: "",
-      name: "",
-      specialization: "",
-      qualification: "",
-      experience: "",
-      phone: "",
-      email: "",
-      about: "",
-      image: null,
-    });
-    setErrors({});
-    setTouched({});
-    alert("Counsellor added successfully!");
+      // Call Zustand store
+      await addCounsellor(data);
+
+      // Reset form on success
+      setFormData({
+        c_id: "",
+        name: "",
+        specialization: "",
+        qualification: "",
+        experience: "",
+        mobile: "",
+        email: "",
+        about: "",
+        image: null,
+      });
+
+      setErrors({});
+      setTouched({});
+    } catch (err) {
+      console.error("Failed to add counsellor:", err);
+    }
   };
 
-  const handleDelete = (id) => {
-    setCounsellors(prev => prev.filter(c => c.id !== id));
+  const handleDelete = (_id) => {
+    try {
+      deleteCounsellor(_id);
+    } catch (err) {
+      console.error("Failed to delete counsellor:", err);
+    }
   };
 
-  const toggleExpanded = (id) => {
-    setExpandedCards(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
 
   const getWordCount = (text) => {
     return text ? text.trim().split(/\s+/).filter(word => word.length > 0).length : 0;
@@ -399,9 +383,9 @@ export default function CounsellorManagement() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputField
-                name="id"
+                name="c_id"
                 placeholder="Counsellor ID (e.g. C003)"
-                value={formData.id}
+                value={formData.c_id}
                 onChange={handleChange}
                 onBlur={handleBlur}
               />
@@ -459,9 +443,9 @@ export default function CounsellorManagement() {
               />
 
               <InputField
-                name="phone"
-                placeholder="Phone Number"
-                value={formData.phone}
+                name="mobile"
+                placeholder="Mobile Number"
+                value={formData.mobile}
                 onChange={handleChange}
                 onBlur={handleBlur}
               />
@@ -483,7 +467,7 @@ export default function CounsellorManagement() {
                   {/* About Section */}
                   <TextAreaField
                     name="about"
-                    placeholder="About (minimum 10 words, maximum 200 words)"
+                    placeholder="About (minimum 5 words, maximum 200 words)"
                     value={formData.about}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -546,10 +530,19 @@ export default function CounsellorManagement() {
             <div className="flex justify-start">
               <button
                 onClick={handleAdd}
-                className="mt-8 group px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-lg font-semibold hover:shadow-2xl hover:shadow-blue-200 transition-all transform hover:scale-105 flex items-center"
+                disabled={isAddingCounsellor} 
+                className={`mt-8 group px-8 py-4 rounded-full text-lg font-semibold flex items-center transition-all transform ${
+                  isAddingCounsellor
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-2xl hover:shadow-blue-200 hover:scale-105"
+                }`}
               >
-                <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" />
-                Add Counsellor
+                <Plus
+                  className={`w-5 h-5 mr-2 transition-transform ${
+                    !isAddingCounsellor && "group-hover:rotate-90"
+                  }`}
+                />
+                {isAddingCounsellor ? "Adding..." : "Add Counsellor"}
               </button>
             </div>
           </div>
@@ -566,17 +559,17 @@ export default function CounsellorManagement() {
             <div className="absolute inset-0 backdrop-blur-2xl bg-gradient-to-br from-white/50 to-blue-50/30 rounded-3xl"></div>
             <div className="relative bg-white/70 backdrop-blur-sm rounded-3xl border border-blue-100 p-6 md:p-8 shadow-2xl">
 
-              {counsellors.length > 0 ? (
+              {allCounsellors.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {counsellors.map((c) => {
-                    const isExpanded = expandedCards[c.id];
+                  {allCounsellors.map((c) => {
+                    const isExpanded = expandedCards[c.c_id];
                     const wordCount = getWordCount(c.about);
                     const shouldShowToggle = wordCount > 30; // Show toggle for more than 30 words
                     const displayText = isExpanded || !shouldShowToggle ? c.about :
                       c.about.split(' ').slice(0, 30).join(' ') + '...';
 
                     return (
-                      <div key={c.id} className="relative group">
+                      <div key={c.c_id} className="relative group">
                         <div className="absolute inset-0 backdrop-blur-xl bg-gradient-to-br from-blue-50/50 to-white/30 rounded-2xl transform scale-95 group-hover:scale-100 transition-transform"></div>
                         <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-200 p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 min-h-[480px] flex flex-col">
 
@@ -585,7 +578,7 @@ export default function CounsellorManagement() {
                             <div className="flex items-center gap-1">
                               <div className="relative flex-shrink-0">
                                 <img
-                                  src={c.image}
+                                  src={c.profileUrl}
                                   alt={c.name}
                                   className="w-16 h-16 rounded-full object-cover border-2 border-blue-200"
                                 />
@@ -593,11 +586,11 @@ export default function CounsellorManagement() {
                               </div>
                               <div className="min-w-0">
                                 <h3 className="text-lg font-bold text-gray-800 truncate">{c.name}</h3>
-                                <p className="text-sm text-gray-500 font-medium">{c.id}</p>
+                                <p className="text-sm text-gray-500 font-medium">{c.c_id}</p>
                               </div>
                             </div>
                             <button
-                              onClick={() => handleDelete(c.id)}
+                              onClick={() => handleDelete(c._id)}
                               className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-all flex-shrink-0"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -611,24 +604,6 @@ export default function CounsellorManagement() {
                                 {displayText}
                               </p>
                             </div>
-                            {/* {shouldShowToggle && (
-                              <button
-                                onClick={() => toggleExpanded(c.id)}
-                                className="mt-2 text-blue-600 hover:text-blue-700 text-xs font-medium flex items-center gap-1 transition-colors"
-                              >
-                                {isExpanded ? (
-                                  <>
-                                    <EyeOff className="w-3 h-3" />
-                                    Show Less
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="w-3 h-3" />
-                                    Read More ({wordCount} words)
-                                  </>
-                                )}
-                              </button>
-                            )} */}
                           </div>
 
                           {/* Specialization Badge */}
@@ -660,7 +635,7 @@ export default function CounsellorManagement() {
                               <div className="w-6 h-6 bg-indigo-50 rounded-full flex items-center justify-center flex-shrink-0">
                                 <Phone className="w-3 h-3 text-indigo-600" />
                               </div>
-                              <span className="font-medium">{c.phone}</span>
+                              <span className="font-medium">{c.mobile}</span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-600">
                               <div className="w-6 h-6 bg-cyan-50 rounded-full flex items-center justify-center flex-shrink-0">

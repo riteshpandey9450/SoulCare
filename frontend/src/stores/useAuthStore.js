@@ -3,9 +3,10 @@ import axios from '../lib/axios';
 import {toast} from 'react-hot-toast'
 
 export const useAuthStore = create((set, get) => ({
-
+    allCounsellors: [],
     user: null,
     isSigningUp: false,
+    isAddingCounsellor: false,
 
     signup: async (formData) => {
         set({isSigningUp: true});
@@ -48,5 +49,39 @@ export const useAuthStore = create((set, get) => ({
         } catch (error) {
             console.error('Failed to fetch user:', error);
         }
+    },
+
+    addCounsellor: async (formData) => {
+        set({isAddingCounsellor: true});
+        try {
+            const response = await axios.post('/auth/addcounsellor', formData);
+            toast.success('Counsellor added successfully!');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to add counsellor');
+        }finally {
+            set({isAddingCounsellor: false});
+        }
+    },
+
+    getAllCounsellors: async () => {
+        try {
+            const response = await axios.get('/auth/getallcounsellors');
+            set({allCounsellors: response.data || []});
+        } catch (error) {
+            console.error('Failed to fetch counsellors:', error);
+            return [];
+        }
+    },
+
+    deleteCounsellor: async (_id) => {
+    try {
+        await axios.delete(`/auth/deletecounsellor`, {
+        data: { _id }   
+        });
+        toast.success('Counsellor deleted successfully!');
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to delete counsellor');
     }
+    },
+
 }));

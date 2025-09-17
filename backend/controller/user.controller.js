@@ -102,8 +102,6 @@ export const addCounsellor = async (req, res) => {
     const user = await User.create({ name, c_id, email, password: c_id+"@123", specialization, qualification, experience, mobile, about, profileUrl: imageUrl, role: 'counsellor' });
     await user.save();
 
-    generateToken(user._id, res);
-
     return res.status(201).json({
       message: 'Counsellor registered successfully',
       user: {
@@ -234,6 +232,32 @@ export const editProfile = async (req, res) => {
       message: "Profile updated successfully",
       user: updatedUser,
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
+export const getAllCounsellors = async (req, res) => {
+  try {
+    const counsellors = await User.find({ role: "counsellor" });
+    res.json(counsellors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const deleteCounsellor = async (req, res) => {
+  try {
+    const { _id } = req.body;
+    const deletedCounsellor = await User.findByIdAndDelete(_id);
+    if (!deletedCounsellor) {
+      return res.status(404).json({ message: "Counsellor not found" });
+    }
+    res.json({ message: "Counsellor deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
