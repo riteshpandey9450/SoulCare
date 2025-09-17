@@ -16,16 +16,24 @@ import CounsellorManagement from './pages/CounsellorManagementPage'
 import FeedbackPage from './pages/FeedbackPage'
 import Reports from './pages/Reports'
 import CounsellorProfile from './pages/CounsellorProfile'
+import { Toaster } from 'react-hot-toast'
+import { useEffect } from 'react'
+import { useAuthStore } from './stores/useAuthStore'
 
 const App = () => {
-  const role = "student"
+  const {user,getMe} = useAuthStore();
+
+  useEffect(() => {
+    getMe();
+  },[]);
+
   return (
     <>
       <Router>
         <Navbar/>
           <Routes>
             <Route path='/' element={<LandingPage/>} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth" element={user? <LandingPage /> : <Auth />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path= {`student-dashboard`} element={<StudentDashboard />} />
@@ -42,6 +50,7 @@ const App = () => {
           </Routes>
         <Footer/>
       </Router>
+      <Toaster/>
     </>
   )
 }
