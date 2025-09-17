@@ -1,316 +1,207 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { 
+  FiUser, FiAward, FiPhone, FiGlobe, FiBell, FiLock, FiCheckCircle, 
+  FiHome, FiHash, FiCalendar, FiEdit, FiCheck, FiCamera, FiTrash2 
+} from 'react-icons/fi';
+
+const FormField = ({ icon, name, ...props }) => (
+  <div className="relative group">
+    <div className="absolute top-1/2 -translate-y-1/2 left-4 z-10 text-slate-500 group-focus-within:text-blue-500 transition-colors duration-300">
+      {React.cloneElement(icon, { size: 20 })}
+    </div>
+    <input
+      name={name}
+      onChange={props.onChange}
+      value={props.value}
+      required
+      className="w-full pl-12 pr-4 py-4 bg-white/40 backdrop-blur-sm border-2 border-transparent rounded-2xl placeholder-slate-500 text-slate-800 font-medium focus:outline-none focus:border-blue-400/80 focus:bg-white/60 transition-all duration-300"
+      {...props}
+    />
+  </div>
+);
+
+const ProfileInfoCard = ({ icon, label, value, gradient }) => (
+  <div className={`group relative backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl p-6 hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-blue-500/10 transform hover:-translate-y-1 overflow-hidden`}>
+     <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${gradient} opacity-80 group-hover:opacity-100 transition-opacity duration-300`}></div>
+     <div className="flex items-center gap-4">
+        <div className={`flex-shrink-0 w-12 h-12 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-lg text-white`}>
+          {React.cloneElement(icon, { size: 24 })}
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-slate-600">{label}</p>
+          <p className="text-lg font-bold text-slate-800 tracking-tight">{value}</p>
+        </div>
+     </div>
+  </div>
+);
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
-    name: "",
-    rollNo: "",
-    college: "",
-    stream: "",
-    year: "",
-    mobile: "",
-    language: "English",
-    notifications: true,
-    privacy: "Public",
+    name: "", rollNo: "", college: "", stream: "", year: "", mobile: "",
+    language: "English", notifications: true, privacy: "Public",
+    imageFile: null, imageDataUrl: null,
   });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setProfile(formData);
+  const handleImageChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setFormData((prev) => ({ ...prev, imageFile: file, imageDataUrl: ev.target.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleEdit = () => {
-    setProfile(null);
+  const removeImage = () => {
+    setFormData((prev) => ({ ...prev, imageFile: null, imageDataUrl: null }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+  
+  const triggerImageUpload = () => fileInputRef.current?.click();
+  const handleSubmit = (e) => { e.preventDefault(); setProfile(formData); };
+  const handleEdit = () => { setProfile(null); };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
-      {/* Enhanced Background with Grid Pattern and Blue Patches */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden font-sans">
+      {/* Background decorations */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="h-full w-full" style={{
-            backgroundImage: `linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)`,
-            backgroundSize: '50px 50px'
-          }}></div>
+          <div className="h-full w-full" style={{ backgroundImage: "linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px)", backgroundSize: "50px 50px" }}></div>
         </div>
-        
-        {/* Blue Patches - Enhanced with Animation */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-100 to-blue-400 rounded-full opacity-40 -translate-y-1/2 translate-x-1/3 animate-pulse"></div>
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-sky-100 to-sky-400 rounded-full opacity-30 -translate-x-1/2 animate-pulse delay-1000"></div>
         <div className="absolute bottom-0 right-3/4 w-72 h-72 bg-gradient-to-tr from-indigo-100 to-indigo-400 rounded-full opacity-35 translate-y-1/3 animate-pulse delay-2000"></div>
         <div className="absolute bottom-1/3 left-3/4 w-64 h-64 bg-gradient-to-bl from-cyan-100 to-cyan-400 rounded-full opacity-30 animate-pulse delay-3000"></div>
-        <div className="absolute top-5/7 right-1/4 w-56 h-56 bg-gradient-to-tl from-blue-100 to-blue-400 rounded-full opacity-25 animate-pulse delay-4000"></div>
-        
-        {/* Additional floating elements */}
-        <div className="absolute top-1/3 left-1/2 w-40 h-40 bg-gradient-to-r from-violet-100 to-purple-300 rounded-full opacity-20 animate-pulse delay-500"></div>
-        <div className="absolute bottom-1/4 right-1/2 w-48 h-48 bg-gradient-to-l from-teal-100 to-emerald-300 rounded-full opacity-25 animate-pulse delay-1500"></div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 p-6 max-w-6xl mx-auto">
-        {/* Enhanced Header with Glassmorphism */}
-
-
-        {profile ? (
-          /* Enhanced Profile Display */
-          <div className="space-y-8">
-            {/* Main Profile Card */}
-            <div className="backdrop-blur-2xl bg-white/15 border border-white/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-violet-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-500/10 to-cyan-500/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-              
-              <div className="relative z-10">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-                  <div className="flex items-center space-x-6">
+      {/* Center Wrapper */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-5xl">
+          {profile ? (
+            // --- PROFILE DISPLAY VIEW ---
+            <div className="space-y-8 animate-[fadeIn_0.5s_ease-in-out]">
+              <div className="backdrop-blur-2xl bg-white/30 border border-white/40 rounded-3xl p-8 shadow-2xl shadow-blue-500/5">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-8 mb-10">
+                  <div className="flex items-center gap-6">
                     <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                      <div className="relative w-28 h-28 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 rounded-full flex items-center justify-center shadow-2xl backdrop-blur-sm border-2 border-white/40">
-                        <span className="text-3xl font-bold text-white">{profile.name.charAt(0)}</span>
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full border-4 border-white/60 backdrop-blur-sm flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                      {profile.imageDataUrl ? (
+                        <img src={profile.imageDataUrl} alt="Profile" className="w-28 h-28 object-cover rounded-full shadow-2xl border-4 border-white/80" />
+                      ) : (
+                        <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl border-4 border-white/80">
+                          <span className="text-5xl font-bold text-white tracking-wider">{profile.name?.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full border-4 border-white/60 flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <h2 className="text-4xl font-bold text-gray-800 tracking-tight">{profile.name}</h2>
-                      <p className="text-gray-600 text-lg font-medium">{profile.stream} • {profile.year}</p>
-                      <div className="inline-flex items-center backdrop-blur-sm bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2">
-                        <svg className="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span className="text-blue-700 font-semibold text-sm">{profile.college}</span>
+                    <div>
+                      <h1 className="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                        {profile.name}
+                      </h1>
+                      <p className="text-lg font-medium text-slate-600">{profile.stream} • {profile.year} Year</p>
+                      <div className="mt-2 inline-flex items-center bg-blue-100/50 border border-blue-200/80 rounded-full px-3 py-1 text-sm font-semibold text-blue-700">
+                        <FiHome className="w-4 h-4 mr-2" />
+                        {profile.college}
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={handleEdit}
-                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white rounded-2xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 backdrop-blur-sm border border-white/20 overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span className="relative z-10 flex items-center space-x-2">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      <span>Edit Profile</span>
+                  <button onClick={handleEdit} className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:shadow-indigo-500/30 transform hover:scale-105 transition-all duration-300 backdrop-blur-sm border border-white/20">
+                    <span className="relative flex items-center gap-2">
+                      <FiEdit className="transition-transform duration-300 group-hover:rotate-[-15deg]" /> Edit Profile
                     </span>
                   </button>
                 </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <ProfileInfoCard icon={<FiHash />} label="Roll Number" value={profile.rollNo} gradient="from-blue-400 to-cyan-400"/>
+                  <ProfileInfoCard icon={<FiPhone />} label="Mobile" value={profile.mobile} gradient="from-cyan-400 to-teal-400"/>
+                  <ProfileInfoCard icon={<FiGlobe />} label="Language" value={profile.language} gradient="from-teal-400 to-emerald-400"/>
+                  <ProfileInfoCard icon={<FiBell />} label="Notifications" value={profile.notifications ? "Enabled" : "Disabled"} gradient="from-purple-400 to-violet-400"/>
+                  <ProfileInfoCard icon={<FiLock />} label="Privacy" value={profile.privacy} gradient="from-violet-400 to-indigo-400"/>
+                  <ProfileInfoCard icon={<FiCheckCircle />} label="Status" value="Active" gradient="from-emerald-400 to-green-400"/>
+                </div>
               </div>
-
-                {/* Profile Details Grid */}
-                <div className="grid xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2 gap-6">
-                {[
-                    { label: "Roll Number", value: profile.rollNo, icon: "🎓", gradient: "from-blue-500 to-cyan-500", bgGradient: "from-blue-50 to-cyan-50" },
-                    { label: "Mobile", value: profile.mobile, icon: "📱", gradient: "from-cyan-500 to-teal-500", bgGradient: "from-cyan-50 to-teal-50" },
-                    { label: "Language", value: profile.language, icon: "🌐", gradient: "from-teal-500 to-emerald-500", bgGradient: "from-teal-50 to-emerald-50" },
-                    { label: "Notifications", value: profile.notifications ? "Enabled" : "Disabled", icon: "🔔", gradient: "from-purple-500 to-violet-500", bgGradient: "from-purple-50 to-violet-50" },
-                    { label: "Privacy", value: profile.privacy, icon: "🔒", gradient: "from-violet-500 to-indigo-500", bgGradient: "from-violet-50 to-indigo-50" },
-                    { label: "Status", value: "Active", icon: "✅", gradient: "from-emerald-500 to-green-500", bgGradient: "from-emerald-50 to-green-50" }
-                ].map((item, index) => (
-                    <div key={index} className={`group backdrop-blur-xl bg-gradient-to-br ${item.bgGradient} bg-opacity-30 border border-white/30 rounded-3xl p-6 hover:bg-opacity-50 transition-all duration-500 shadow-xl hover:shadow-2xl transform hover:scale-105 relative overflow-hidden`}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                        <div className={`w-14 h-14 bg-gradient-to-r ${item.gradient} rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm border border-white/40 group-hover:scale-110 transition-transform duration-300`}>
-                            <span className="text-2xl filter drop-shadow-sm">{item.icon}</span>
-                        </div>
-                        <div className={`w-2 h-2 bg-gradient-to-r ${item.gradient} rounded-full animate-pulse`}></div>
-                        </div>
-                        <h3 className="font-bold text-gray-800 text-lg mb-2 tracking-tight">{item.label}</h3>
-                        <p className="text-gray-700 text-xl font-semibold">{item.value}</p>
-                        <div className={`mt-3 w-full h-1 bg-gradient-to-r ${item.gradient} rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-300`}></div>
-                    </div>
-                    </div>
-                ))}
-                </div>
             </div>
-          </div>
-        ) : (
-          /* Enhanced Profile Form */
-          <div className="space-y-8">
-            {/* Form Introduction Card */}
-            <div className="backdrop-blur-2xl bg-white/15 border border-white/30 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-violet-500/5"></div>
-              <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full mb-6 shadow-xl">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <h2 className="text-4xl font-bold text-gray-800 mb-4 tracking-tight">Complete Your Profile</h2>
-                <p className="text-gray-700 text-xl max-w-2xl mx-auto leading-relaxed">
-                  Fill in your information to get started with your personalized healthcare journey
+          ) : (
+            // --- PROFILE EDIT/CREATE FORM ---
+            <div className="space-y-8 animate-[fadeIn_0.5s_ease-in-out]">
+              <div className="text-center">
+                <h1 className="text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                  Create Your Profile
+                </h1>
+                <p className="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">
+                  Fill in your details to create a personalized and engaging profile.
                 </p>
               </div>
-
-                {/* Enhanced Form */}
-                <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Personal Information Section */}
-                <div className="backdrop-blur-2xl bg-white/15 border border-white/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-                    <div className="flex items-center space-x-4 mb-8">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="backdrop-blur-2xl bg-white/30 border border-white/40 rounded-3xl p-8 shadow-2xl shadow-blue-500/5 space-y-6">
+                  <h2 className="text-2xl font-bold text-slate-800">Personal Information</h2>
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <FormField icon={<FiUser/>} name="name" type="text" placeholder="Your Full Name" value={formData.name} onChange={handleChange} />
+                    <FormField icon={<FiHash/>} name="rollNo" type="text" placeholder="Roll Number" value={formData.rollNo} onChange={handleChange}/>
+                    <FormField icon={<FiHome/>} name="college" type="text" placeholder="College Name" value={formData.college} onChange={handleChange}/>
+                    <FormField icon={<FiAward/>} name="stream" type="text" placeholder="e.g., Computer Science" value={formData.stream} onChange={handleChange}/>
+                    <FormField icon={<FiPhone/>} name="mobile" type="tel" placeholder="Mobile Number" value={formData.mobile} onChange={handleChange}/>
+                    <div className="relative group">
+                      <div className="absolute top-1/2 -translate-y-1/2 left-4 z-10 text-slate-500 group-focus-within:text-blue-500 transition-colors duration-300">
+                        <FiCalendar size={20}/>
+                      </div>
+                      <select name="year" value={formData.year} onChange={handleChange} required className="w-full pl-12 pr-4 py-4 bg-white/40 backdrop-blur-sm border-2 border-transparent rounded-2xl text-slate-800 font-medium focus:outline-none focus:border-blue-400/80 focus:bg-white/60 transition-all duration-300 appearance-none">
+                        <option value="" disabled>Select Academic Year</option>
+                        <option value="1st">1st Year</option>
+                        <option value="2nd">2nd Year</option>
+                        <option value="3rd">3rd Year</option>
+                        <option value="4th">4th Year</option>
+                      </select>
                     </div>
-                    <h3 className="text-3xl font-bold text-gray-800 tracking-tight">Personal Information</h3>
-                    </div>
-
-                    <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-8">
-                    {[
-                        { name: "name", label: "Full Name", type: "text", placeholder: "Enter your full name", gradient: "from-blue-500/10 to-cyan-500/10" },
-                        { name: "rollNo", label: "Roll Number", type: "text", placeholder: "Enter roll number", gradient: "from-cyan-500/10 to-teal-500/10" },
-                        { name: "college", label: "College Name", type: "text", placeholder: "Enter college name", gradient: "from-teal-500/10 to-emerald-500/10" },
-                        { name: "stream", label: "Stream", type: "text", placeholder: "e.g., Computer Science", gradient: "from-emerald-500/10 to-green-500/10" },
-                        { name: "mobile", label: "Mobile Number", type: "tel", placeholder: "Enter mobile number", gradient: "from-violet-500/10 to-purple-500/10" }
-                    ].map((field, index) => (
-                        <div key={index} className="space-y-3 group">
-                        <label className="block text-sm font-bold text-gray-700 mb-2">{field.label}</label>
-                        <div className="relative">
-                            <input
-                            type={field.type}
-                            name={field.name}
-                            value={formData[field.name]}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-5 bg-white/30 backdrop-blur-sm border border-white/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 placeholder-gray-500 text-gray-800 font-medium group-hover:bg-white/40"
-                            placeholder={field.placeholder}
-                            />
-                            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${field.gradient} pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-                        </div>
-                        </div>
-                    ))}
-
-                    {/* Year Select */}
-                    <div className="space-y-3 group">
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Academic Year</label>
-                        <div className="relative">
-                        <select
-                            name="year"
-                            value={formData.year}
-                            onChange={handleChange}
-                            required
-                            className="w-full p-5 bg-white/30 backdrop-blur-sm border border-white/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-gray-800 font-medium group-hover:bg-white/40"
-                        >
-                            <option value="">Select Year</option>
-                            <option value="1st">1st Year</option>
-                            <option value="2nd">2nd Year</option>
-                            <option value="3rd">3rd Year</option>
-                            <option value="4th">4th Year</option>
-                        </select>
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-500/10 to-violet-500/10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
-                    </div>
-                    </div>
+                  </div>
                 </div>
-
-                {/* Preferences Section */}
-                <div className="backdrop-blur-2xl bg-white/15 border border-white/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-violet-500"></div>
-                    <div className="flex items-center space-x-4 mb-8">
-                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center shadow-lg">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                        </svg>
+                <div className="backdrop-blur-2xl bg-white/30 border border-white/40 rounded-3xl p-8 shadow-2xl shadow-blue-500/5">
+                  <h2 className="text-2xl font-bold text-slate-800 mb-4">Profile Photo</h2>
+                  <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <div className="relative w-32 h-32 rounded-full bg-white/40 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-300">
+                      {formData.imageDataUrl ? (
+                        <img src={formData.imageDataUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <FiCamera className="w-10 h-10 text-slate-400" />
+                      )}
                     </div>
-                    <h3 className="text-3xl font-bold text-gray-800 tracking-tight">Preferences & Settings</h3>
+                    <div className="flex-1 text-center sm:text-left">
+                      <p className="text-slate-600 mb-3">Upload a photo to make your profile stand out. (PNG, JPG up to 2MB)</p>
+                      <div className="flex items-center justify-center sm:justify-start gap-3">
+                        <button type="button" onClick={triggerImageUpload} className="px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-200">
+                          Choose Photo
+                        </button>
+                        {formData.imageDataUrl && (
+                          <button type="button" onClick={removeImage} className="p-2 bg-white/80 border border-slate-300 rounded-lg shadow-sm hover:bg-red-50 transition-colors duration-200">
+                            <FiTrash2 className="text-red-500"/>
+                          </button>
+                        )}
+                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                      </div>
                     </div>
-
-                    <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Language Selection */}
-                    <div className="space-y-3 group">
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Preferred Language</label>
-                        <div className="relative">
-                        <select
-                            name="language"
-                            value={formData.language}
-                            onChange={handleChange}
-                            className="w-full p-5 bg-white/30 backdrop-blur-sm border border-white/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 text-gray-800 font-medium group-hover:bg-white/40"
-                        >
-                            <option value="English">English</option>
-                            <option value="Hindi">Hindi</option>
-                            <option value="Bengali">Bengali</option>
-                            <option value="Tamil">Tamil</option>
-                            <option value="Telugu">Telugu</option>
-                        </select>
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-500/10 to-cyan-500/10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
-                    </div>
-
-                    {/* Notifications Toggle */}
-                    <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 group hover:bg-white/30 transition-all duration-300">
-                        <label className="flex items-center space-x-4 cursor-pointer">
-                        <div className="relative">
-                            <input
-                            type="checkbox"
-                            name="notifications"
-                            checked={formData.notifications}
-                            onChange={handleChange}
-                            className="sr-only"
-                            />
-                            <div className={`w-10 h-10 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 shadow-lg ${formData.notifications ? 'bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-500 scale-110' : 'bg-white/40 border-white/60 hover:border-emerald-300'}`}>
-                            {formData.notifications && (
-                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                            )}
-                            </div>
-                        </div>
-                        <div>
-                            <span className="font-bold text-gray-800 text-lg block">Enable Notifications</span>
-                            {/* <p className="text-sm text-gray-600">Receive updates</p> */}
-                        </div>
-                        </label>
-                    </div>
-
-                    {/* Privacy Setting */}
-                    <div className="space-y-3 group">
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Privacy Setting</label>
-                        <div className="relative">
-                        <select
-                            name="privacy"
-                            value={formData.privacy}
-                            onChange={handleChange}
-                            className="w-full p-5 bg-white/30 backdrop-blur-sm border border-white/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all duration-300 text-gray-800 font-medium group-hover:bg-white/40"
-                        >
-                            <option value="Public">Public Profile</option>
-                            <option value="Private">Private Profile</option>
-                        </select>
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-500/10 to-purple-500/10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </div>
-                    </div>
-                    </div>
+                  </div>
                 </div>
-
-                {/* Submit Button */}
-                <button
-                type="submit"
-                className="group relative w-full py-6 px-8 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white rounded-3xl font-bold text-xl shadow-2xl hover:shadow-3xl transform hover:scale-[1.02] transition-all duration-300 overflow-hidden backdrop-blur-sm border border-white/30"
-                >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span className="relative z-10 flex items-center justify-center space-x-3">
-                    <svg className="w-7 h-7 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="tracking-wide">Save Profile & Continue</span>
-                </span>
+                <button type="submit" className="group relative w-full py-5 px-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white rounded-2xl font-bold text-lg shadow-2xl shadow-indigo-500/30 hover:shadow-3xl hover:shadow-indigo-500/40 transform hover:scale-[1.02] transition-all duration-300">
+                  <span className="relative z-10 flex items-center justify-center gap-3">
+                    <FiCheck className="group-hover:rotate-12 transition-transform duration-300" size={24}/> Save & View Profile
+                  </span>
                 </button>
-                </form>
+              </form>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
