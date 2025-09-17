@@ -2,6 +2,11 @@ import User from '../models/user.model.js';
 import cloudinary from '..//utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 
+function generateUserId() {
+  const randomNum = Math.floor(1000 + Math.random() * 9000); // ensures 4-digit number
+  return `User-${randomNum}`;
+}
+
 export const generateToken = (userId, res) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
@@ -33,7 +38,7 @@ export const signup = async (req, res) => {
     if (userExists)
       return res.status(400).json({ message: 'User already exists' });
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, anonymous_id:generateUserId() });
     await user.save();
 
     generateToken(user._id, res);
@@ -44,6 +49,8 @@ export const signup = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        anonymous_id: user.anonymous_id,
+        role: user.role
       },
     });
 
@@ -138,13 +145,10 @@ export const login = async (req, res) => {
 
     generateToken(user._id, res);
 
-    res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      bio: user.bio,
-    });
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
 
+    res.status(200).json(userWithoutPassword);
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -152,3 +156,30 @@ export const login = async (req, res) => {
 };
 
 
+
+export const logout = async (req, res) => {
+  try {
+    if (!req.cookies || !req.cookies.jwt) {
+      return res.status(400).json({ message: "User not logged in" });
+    }
+
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV !== "development",
+    });
+    res.status(200).json({ message: "Logout successfully" });
+  } catch (error) {
+    console.error("Error in logout:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+export const getMe = async (req, res) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

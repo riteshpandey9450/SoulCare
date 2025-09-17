@@ -31,13 +31,13 @@ const userSchema = new mongoose.Schema({
     },
 
     // Student-specific fields
-    Anonymous:{
+    anonymous_id:{
         type: String,
     },
     roolNo: {
         type: Number,
-        sparse: true,   // important!
-        unique: true,   // still unique, but only when the field exists
+        sparse: true,   
+        unique: true,   
     },
 
     stream:{
@@ -45,8 +45,6 @@ const userSchema = new mongoose.Schema({
     },
     academicYear:{
         type: String,
-        enum: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
-        default: '1st Year',
     },
     
 
