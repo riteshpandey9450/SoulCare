@@ -45,3 +45,45 @@ export const bookSession = async (req, res) => {
     res.status(500).json({ error: "Error booking session" });
   }
 };
+
+export const getCounsellorSessions = async (req, res) => {
+  try {
+    const { c_id } = req.body;
+
+    if (!c_id) {
+      return res.status(400).json({ message: "Counsellor ID is required" });
+    }
+
+    const sessions = await Session.find({ c_id }).sort({ date: 1 });
+
+    if (!sessions || sessions.length === 0) {
+      return res.status(404).json({ message: "No sessions found for this counsellor" });
+    }
+
+    res.status(200).json({ sessions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error fetching counsellor sessions" });
+  }
+};
+
+export const getStudentSessions = async (req, res) => {
+  try {
+    const { anonymous_id } = req.body;
+
+    if (!anonymous_id) {
+      return res.status(400).json({ message: "Anonymous ID is required" });
+    }
+
+    const sessions = await Session.find({ anonymous_id }).sort({ date: 1 });
+
+    if (!sessions || sessions.length === 0) {
+      return res.status(404).json({ message: "No sessions found for this student" });
+    }
+
+    res.status(200).json({ sessions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error fetching student sessions" });
+  }
+};

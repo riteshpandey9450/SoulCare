@@ -141,11 +141,11 @@ def generate_moderate_response(user_query, booking_already_offered):
         """
         try:
             response = model.generate_content(initial_prompt)
-            booking_info = "\nTaking the step to talk to someone is really brave. You can book a confidential session with an on-campus counselor through the university's booking page: [https://university.edu/counseling-booking]"
+            booking_info = "\nTaking the step to talk to someone is really brave. You can book a confidential session with an on-campus counselor through the university's booking page: [http://localhost:5173/booking]"
             return response.text + booking_info
         except Exception as e:
             print(f"MODERATE response generation failed. Error: {e}")
-            return "It sounds like you're going through a lot. Talking to a professional can be a really positive step. You can book a confidential session with a counselor here: [https://university.edu/counseling-booking]"
+            return "It sounds like you're going through a lot. Talking to a professional can be a really positive step. You can book a confidential session with a counselor here: [http://localhost:5173/booking]"
 
 # ==============================================================================
 # --- CORE RAG CHATBOT LOGIC ---
@@ -261,7 +261,7 @@ def generate_response(user_query, db_collection, model, conversation_history, bo
         *** END GUIDELINES ***
 
         *** IMPORTANT RULE ***
-        If the user asks how to contact a counselor, book an appointment, or talk to someone professional in a NON-CRISIS context, DO NOT provide direct contact details like names or emails. Instead, you MUST guide them to the confidential booking page with a message like: "That's a great step to take. You can book a confidential session with one of our on-campus counselors through the booking page: [https://university.edu/counseling-booking]".
+        If the user asks how to contact a counselor, book an appointment, or talk to someone professional in a NON-CRISIS context, DO NOT provide direct contact details like names or emails. Instead, you MUST guide them to the confidential booking page with a message like: "That's a great step to take. You can book a confidential session with one of our on-campus counselors through the booking page: [http://localhost:5173/booking]".
         *** END IMPORTANT RULE ***
 
         Review the 'CONVERSATION HISTORY' to understand what has already been discussed.
@@ -463,54 +463,54 @@ def log_conversation(user_msg, bot_msg, session_log_path):
 # --- Main Execution 
 # ==============================================================================
    
-# if __name__ == "__main__":
-#     try:
-#         client = chromadb.PersistentClient(path=DB_PATH)
-#         db = client.get_collection(name=COLLECTION_NAME)
-#     except Exception as e:
-#         print("❌ DATABASE NOT FOUND. Please run 'python build_database.py' first.")
-#         exit()
+if __name__ == "__main__":
+    try:
+        client = chromadb.PersistentClient(path=DB_PATH)
+        db = client.get_collection(name=COLLECTION_NAME)
+    except Exception as e:
+        print("❌ DATABASE NOT FOUND. Please run 'python build_database.py' first.")
+        exit()
     
-#     while True:
-#         conversation_history = []
-#         session_had_crisis = False
-#         session_offered_booking = False
+    while True:
+        conversation_history = []
+        session_had_crisis = False
+        session_offered_booking = False
         
-#         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-#         session_log_filename = f"log_{timestamp}.txt"
-#         session_log_path = os.path.join(LOG_DIR, session_log_filename)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        session_log_filename = f"log_{timestamp}.txt"
+        session_log_path = os.path.join(LOG_DIR, session_log_filename)
 
-#         print("\n" + "="*50)
-#         print("🤖 Meet Elara — your Shining support for every student moment")
-#         print("Type 'quit' to exit.")
-#         print("="*50)
+        print("\n" + "="*50)
+        print("🤖 Meet Elara — your Shining support for every student moment")
+        print("Type 'quit' to exit.")
+        print("="*50)
 
-#         while True:
-#             user_input = input("You: ")
+        while True:
+            user_input = input("You: ")
             
-#             if user_input.lower() == 'quit':
-#                 break
+            if user_input.lower() == 'quit':
+                break
 
-#             ai_response, is_crisis_now, session_offered_booking = generate_response(
-#                 user_input, db, model, conversation_history, session_offered_booking
-#             )
-#             if is_crisis_now:
-#                 session_had_crisis = True
+            ai_response, is_crisis_now, session_offered_booking = generate_response(
+                user_input, db, model, conversation_history, session_offered_booking
+            )
+            if is_crisis_now:
+                session_had_crisis = True
             
-#             conversation_history.append({"role": "user", "parts": [{"text": user_input}]})
-#             conversation_history.append({"role": "model", "parts": [{"text": ai_response}]})
+            conversation_history.append({"role": "user", "parts": [{"text": user_input}]})
+            conversation_history.append({"role": "model", "parts": [{"text": ai_response}]})
 
-#             print("\n🤖 Elara says:")
-#             print(ai_response)
+            print("\n🤖 Elara says:")
+            print(ai_response)
             
-#             log_conversation(user_input, ai_response, session_log_path)
+            log_conversation(user_input, ai_response, session_log_path)
             
-#             print("\n" + "-"*50)
+            print("\n" + "-"*50)
 
-#         if conversation_history:
-#             # print("\n🤖 Elara is generating a summary of your conversation...")
+        if conversation_history:
+            # print("\n🤖 Elara is generating a summary of your conversation...")
             
-#             summary = generate_session_summary(conversation_history, session_log_path, session_had_crisis)
+            summary = generate_session_summary(conversation_history, session_log_path, session_had_crisis)
         
-#         print("🤖 Elara says: Goodbye! Take care. Feel free to reach out again!")
-#         break 
+        print("🤖 Elara says: Goodbye! Take care. Feel free to reach out again!")
+        break 
