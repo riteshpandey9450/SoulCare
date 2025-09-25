@@ -2,9 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
 import { Volume2, VolumeX, Calendar, MessageCircle, BookOpen, Activity, Brain, Heart, Users, Bell, Settings, ChevronRight, Clock, Star, TrendingUp, Shield, Zap, Target, Play, Pause, Download, CheckCircle, AlertCircle, User, Video, Phone, Headphones, SkipBack, SkipForward, Volume1 } from "lucide-react";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useChatStore } from "../stores/useChatStore";
 
 export default function StudentDashboard() {
   const {user} = useAuthStore();
+  const {startSession} = useChatStore();
 
 
   const [chatSummary, setChatSummary] = useState(null);
@@ -603,29 +605,29 @@ useEffect(() => {
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
                   <div className="space-y-3">
                     {quickActions.map((action, index) => (
-  <button
-    key={index}
-    onClick={() => {
-      const path = routes[action.title] || "/";
-      navigate(path);
-    }}
-    className={`group flex items-center p-4 rounded-xl transition-all transform hover:scale-105 hover:shadow-lg w-full text-left ${
-      action.urgent 
-        ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' 
-        : `bg-gradient-to-r ${action.color} text-white`
-    }`}
-  >
-    <div className="flex-shrink-0">
-      {action.icon}
-    </div>
-    <div className="ml-3 flex-1">
-      <p className="font-medium">{action.title}</p>
-      <p className="text-sm opacity-90">{action.description}</p>
-    </div>
-    <ChevronRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-  </button>
-))}
-
+                      <button
+                        key={index}
+                        onClick={() => {
+                          const path = routes[action.title] || "/";
+                          navigate(path);
+                          startSession();
+                        }}
+                        className={`group flex items-center p-4 rounded-xl transition-all transform hover:scale-105 hover:shadow-lg w-full text-left ${
+                          action.urgent 
+                            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' 
+                            : `bg-gradient-to-r ${action.color} text-white`
+                        }`}
+                      >
+                        <div className="flex-shrink-0">
+                          {action.icon}
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <p className="font-medium">{action.title}</p>
+                          <p className="text-sm opacity-90">{action.description}</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>

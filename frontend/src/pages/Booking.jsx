@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, User, GraduationCap, Award, ChevronRight, Sparkles, Shield, Brain, Heart, Star, CheckCircle, Video, MessageCircle, Phone, ArrowLeft } from 'lucide-react';
+import { Link } from "react-router-dom";
 
 export default function BookingPage() {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -502,9 +503,9 @@ export default function BookingPage() {
                     >
                       Book Another Session
                     </button>
-                    <button className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold hover:shadow-xl transition-all">
+                    <Link to="/student-dashboard" className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold hover:shadow-xl transition-all">
                       Go to Dashboard
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

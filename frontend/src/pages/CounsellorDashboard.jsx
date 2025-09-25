@@ -35,6 +35,8 @@ import {
   Menu,
   X
 } from "lucide-react";
+import {Link} from "react-router-dom"
+
 
 const CounsellorDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -44,6 +46,8 @@ const CounsellorDashboard = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // const meetingLink = "https://meet.jit.si/SoulCare-9e35b4b9539d",
 
   // Sample data with more comprehensive information
   useEffect(() => {
@@ -392,7 +396,7 @@ const CounsellorDashboard = () => {
                     <td className="px-6 py-4">
                       <div className="flex space-x-2">
                         {booking.status === "Upcoming" && (
-                          <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-xs font-medium hover:shadow-lg transition-all transform hover:scale-105 flex items-center">
+                          <button onClick={() => window.open("https://meet.jit.si/SoulCare-9e35b4b9539d", '_blank')}  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-xs font-medium hover:shadow-lg transition-all transform hover:scale-105 flex items-center">
                             <Play className="w-3 h-3 mr-1" />
                             Join Session
                           </button>

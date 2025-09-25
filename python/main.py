@@ -1,3 +1,5 @@
+from typing import Optional
+
 import os
 import google.generativeai as genai
 import chromadb
@@ -5,11 +7,17 @@ import datetime
 import json
 import re
 import time
-import json
+import uuid
 from dotenv import load_dotenv
 load_dotenv()
 
+# FastAPI imports
+from fastapi import FastAPI, Body
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
 # --- SETUP & CONSTANTS ---
+
 try:
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 except KeyError:
@@ -23,6 +31,14 @@ DB_PATH = "./chroma_db"
 COLLECTION_NAME = "mental_health_support"
 LOG_DIR = "conversation_logs"
 SUMMARY_DIR = "summaries"
+
+# Initialize DB globally for API
+try:
+    client = chromadb.PersistentClient(path=DB_PATH)
+    db = client.get_collection(name=COLLECTION_NAME)
+except Exception as e:
+    db = None
+    print("❌ DATABASE NOT FOUND. Please run 'python build_database.py' first.")
 
 # ==============================================================================
 # --- SAFETY SYSTEM ---
@@ -241,6 +257,7 @@ def generate_response(user_query, db_collection, model, conversation_history, bo
     elif intent == "MODERATE":
         # Now we can use the context we retrieved earlier
         print("🔶 Moderate concern detected. Generating a supportive counselling response.")
+        retrieved_context, context_topic = get_relevant_context(user_query, db_collection, model)
         response = generate_moderate_response(user_query, booking_already_offered)
         booking_offered_this_turn = True
         main_response_text = response   
@@ -459,58 +476,107 @@ def log_conversation(user_msg, bot_msg, session_log_path):
     except Exception as e:
         print(f"Warning: Could not write to log file {session_log_path}. Error: {e}")
 
+# ============================================================================== 
+# ============================================================================== 
+# --- FastAPI Server for Frontend Integration ---
 # ==============================================================================
-# --- Main Execution 
-# ==============================================================================
-   
-if __name__ == "__main__":
-    try:
-        client = chromadb.PersistentClient(path=DB_PATH)
-        db = client.get_collection(name=COLLECTION_NAME)
-    except Exception as e:
-        print("❌ DATABASE NOT FOUND. Please run 'python build_database.py' first.")
-        exit()
-    
-    while True:
-        conversation_history = []
-        session_had_crisis = False
-        session_offered_booking = False
-        
+
+
+# --- In-memory session management ---
+from collections import defaultdict
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change to your frontend domain in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Store sessions: session_id -> {history, log_path, had_crisis, booking_offered}
+sessions = defaultdict(lambda: {
+    "history": [],
+    "log_path": None,
+    "had_crisis": False,
+    "booking_offered": False
+})
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, FastAPI is running 🚀"}
+
+
+
+@app.post("/generate")
+async def generate_reply(data: dict = Body(...)):
+    user_message = data.get("message", "")
+    session_id = data.get("session_id")
+    booking_offered = data.get("booking_offered", False)
+
+    # Require session_id from frontend
+    if not session_id:
+        return {"error": "session_id is required. Please provide a unique session_id for this chat session."}
+
+    # Initialize session if not exists
+    session = sessions[session_id]
+    if session["log_path"] is None:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        session_log_filename = f"log_{timestamp}.txt"
-        session_log_path = os.path.join(LOG_DIR, session_log_filename)
+        session["log_path"] = os.path.join(LOG_DIR, f"log_{session_id}_{timestamp}.txt")
 
-        print("\n" + "="*50)
-        print("🤖 Meet Elara — your Shining support for every student moment")
-        print("Type 'quit' to exit.")
-        print("="*50)
+    # Build conversation history for response
+    conversation_history = session["history"]
 
-        while True:
-            user_input = input("You: ")
-            
-            if user_input.lower() == 'quit':
-                break
+    if db is None:
+        return {"error": "Database not loaded."}
 
-            ai_response, is_crisis_now, session_offered_booking = generate_response(
-                user_input, db, model, conversation_history, session_offered_booking
-            )
-            if is_crisis_now:
-                session_had_crisis = True
-            
-            conversation_history.append({"role": "user", "parts": [{"text": user_input}]})
-            conversation_history.append({"role": "model", "parts": [{"text": ai_response}]})
+    response_text, intent, booking_offered_this_turn = generate_response(
+        user_message, db, model, conversation_history, booking_offered
+    )
 
-            print("\n🤖 Elara says:")
-            print(ai_response)
-            
-            log_conversation(user_input, ai_response, session_log_path)
-            
-            print("\n" + "-"*50)
+    # Update session state
+    if intent == "CRISIS":
+        session["had_crisis"] = True
+    session["booking_offered"] = booking_offered_this_turn
 
-        if conversation_history:
-            # print("\n🤖 Elara is generating a summary of your conversation...")
-            
-            summary = generate_session_summary(conversation_history, session_log_path, session_had_crisis)
-        
-        print("🤖 Elara says: Goodbye! Take care. Feel free to reach out again!")
-        break 
+    # Append user and bot messages to history
+    session["history"].append({"role": "user", "parts": [{"text": user_message}]})
+    session["history"].append({"role": "model", "parts": [{"text": response_text}]})
+
+    # Log conversation
+    log_conversation(user_message, response_text, session["log_path"])
+
+    return {
+        "response": response_text,
+        "intent": intent,
+        "booking_offered": booking_offered_this_turn,
+        "session_id": session_id
+    }
+
+
+
+@app.post("/quit")
+async def quit_chat(data: dict = Body(...)):
+    """
+    Endpoint to quit the chat and generate a summary of the latest session.
+    Expects:
+        - session_id: str (required)
+    Returns:
+        - summary: generated summary text
+    """
+    session_id = data.get("session_id", "default")
+    session = sessions.get(session_id)
+    if not session or not session["history"]:
+        return {"summary": "There was no conversation to summarize."}
+    history = session["history"]
+    had_crisis = session["had_crisis"]
+    log_path = session["log_path"] or f"temp_log_{session_id}.txt"
+    summary = generate_session_summary(history, log_path, had_crisis)
+    # Optionally clear session after quit
+    sessions.pop(session_id, None)
+    return {"summary": summary}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

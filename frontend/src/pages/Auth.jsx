@@ -5,7 +5,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 import {useNavigate} from "react-router-dom";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
