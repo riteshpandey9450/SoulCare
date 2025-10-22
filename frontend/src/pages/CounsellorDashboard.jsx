@@ -721,7 +721,7 @@ const CounsellorDashboard = () => {
 
           <div className="flex items-center space-x-1">
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Hello, </h1>
-            <span className="text-2xl lg:text-3xl font-bold text-blue-700">Dr. Sharthak</span>
+            <span className="text-2xl lg:text-3xl font-bold text-blue-700">Dr. Piyush</span>
           </div>
 
           {/* Spacer for mobile to center title */}

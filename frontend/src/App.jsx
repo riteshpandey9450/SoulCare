@@ -19,6 +19,7 @@ import CounsellorProfile from './pages/CounsellorProfile'
 import { Toaster } from 'react-hot-toast'
 import { useEffect } from 'react'
 import { useAuthStore } from './stores/useAuthStore'
+import CommunitySupportPage from './pages/CommunitySupportPage'
 
 const App = () => {
   const {user,getMe} = useAuthStore();
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/manage-counsellors" element={<CounsellorManagement />} />
             <Route path="/feedback-form" element={<FeedbackPage />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/support" element={<CommunitySupportPage />} />
           </Routes>
         <Footer/>
       </Router>

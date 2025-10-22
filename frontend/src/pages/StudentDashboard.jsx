@@ -1,12 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
-import { Volume2, VolumeX, Calendar, MessageCircle, BookOpen, Activity, Brain, Heart, Users, Bell, Settings, ChevronRight, Clock, Star, TrendingUp, Shield, Zap, Target, Play, Pause, Download, CheckCircle, AlertCircle, User, Video, Phone, Headphones, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Volume2, VolumeX, Calendar, MessageCircle, BookOpen, Activity, Brain, Heart, Users, Bell, Settings, ChevronRight, Clock, Star, TrendingUp, Shield, Zap, Target, Play, Pause, Download, CheckCircle, AlertCircle, User, Video, Phone, Headphones, SkipBack, SkipForward, Volume1, HelpCircle } from "lucide-react";
 import { useAuthStore } from "../stores/useAuthStore";
-import { useChatStore } from "../stores/useChatStore";
 
 export default function StudentDashboard() {
   const {user} = useAuthStore();
-  const {startSession} = useChatStore();
+  console.log(user);
 
 
   const [chatSummary, setChatSummary] = useState(null);
@@ -149,7 +148,8 @@ useEffect(() => {
 
   const quickActions = [
     { title: "AI Chatbot", description: "Get instant support", icon: <Brain className="w-6 h-6" />, color: "from-blue-500 to-blue-600", urgent: false },
-    { title: "Book Session", description: "Schedule with counselor", icon: <Calendar className="w-6 h-6" />, color: "from-green-500 to-green-600", urgent: false }
+    { title: "Book Session", description: "Schedule with counselor", icon: <Calendar className="w-6 h-6" />, color: "from-green-500 to-green-600", urgent: false },
+    { title: "Support", description: "Get help and guidance", icon: <HelpCircle className="w-6 h-6" />, color: "from-purple-500 to-purple-600", urgent: false }
   ];
 
   
@@ -243,6 +243,7 @@ useEffect(() => {
   const routes = {
     "AI Chatbot": "/chatbot",
     "Book Session": "/booking",
+    "Support": "/support",
   };
 
   const getGreeting = () => {
@@ -610,7 +611,6 @@ useEffect(() => {
                         onClick={() => {
                           const path = routes[action.title] || "/";
                           navigate(path);
-                          startSession();
                         }}
                         className={`group flex items-center p-4 rounded-xl transition-all transform hover:scale-105 hover:shadow-lg w-full text-left ${
                           action.urgent 
